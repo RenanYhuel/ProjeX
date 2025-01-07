@@ -37,3 +37,4 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+merge.py // This is the file that generate all command to push, merge and delete the branch after the last commit to just copy/paste commands without writing the name of the feature each time.
