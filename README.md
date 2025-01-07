@@ -1,13 +1,15 @@
+
 # ProjeX
 
-ProjeX is a project management application built with Next.js. It allows users to create and manage projects efficiently.
+ProjeX is a project management application built with **Next.js**. It allows users to create, manage projects, and collaborate effectively in real-time.
 
 ## Features
 
-- User authentication (Login and registration)
-- Real-time notifications
-- Task management with deadlines and priorities
-- Project dashboards with statistics
+- **User authentication** (Login and Registration)
+- **Real-time notifications** with Socket.io
+- **Task management** with deadlines and priorities
+- **Project dashboards** with statistics and analytics
+- **User management** (Admin can manage user roles within the project)
 
 ## Installation
 
@@ -23,21 +25,30 @@ ProjeX is a project management application built with Next.js. It allows users t
     npm install
     ```
 
-3. Run the development server:
+3. Create a `.env` file and add the following environment variables:
+
+    ```env
+    DATABASE_URL=your-database-connection-string
+    JWT_SECRET=your-jwt-secret
+    ```
+
+4. Run the development server:
 
     ```bash
     npm run dev
     ```
 
-4. Access the application at [http://localhost:3000](http://localhost:3000)
+5. Access the application at [http://localhost:3000](http://localhost:3000)
 
 ### Technologies Used
 
-- Next.js
-- React
-- Firebase (for real-time database)
-- Socket.io (for real-time notifications)
+- **Next.js** (Full-stack React framework)
+- **React** (UI Components)
+- **Prisma** (ORM for database management with PostgreSQL)
+- **PostgreSQL** (Database)
+- **Socket.io** (Real-time notifications)
+- **JWT** (User authentication)
 
 ## License
 
-This project is licensed under the GNU Affero General Public License (AGPL).
+This project is licensed under the **GNU Affero General Public License (AGPL)**.
