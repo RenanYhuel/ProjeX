@@ -30,6 +30,7 @@ ProjeX is a project management application built with **Next.js**. It allows use
     ```env
     DATABASE_URL=your-database-connection-string
     JWT_SECRET=your-jwt-secret
+    SENDGRID_SECRET=your-sendgrid-secret
     ```
 
 4. Run the development server:
@@ -48,6 +49,7 @@ ProjeX is a project management application built with **Next.js**. It allows use
 - **PostgreSQL** (Database)
 - **Socket.io** (Real-time notifications)
 - **JWT** (User authentication)
+- **SendGrid** (Email services)
 
 ## License
 
