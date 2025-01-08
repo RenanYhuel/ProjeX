@@ -24,6 +24,15 @@ export default async function handler(req: NextApiRequest,res: NextApiResponse
     }
 
     const { email, password, name, firstname } = result.data;
+    const userExists = await prisma.user.findUnique({
+        where: {
+            email,
+        },
+    });
+    if (userExists) {
+        return res.status(400).json({ message: 'Cet email est déjà associé à un compte' });
+    }
+
     const saltRounds = 10;
     try {
         const hash = await bcrypt.hash(password, saltRounds);
