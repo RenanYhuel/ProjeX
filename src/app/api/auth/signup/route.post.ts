@@ -15,13 +15,13 @@ const schema = z.object({
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'POST') {
-        return res.status(405).json({ message: 'HTTP method not allowed' });
+        return res.status(405).json({ message: 'HTTP method not allowed', success : false});
     }
     const body = req.body;
     const result = schema.safeParse(body);
 
     if (!result.success) {
-        return res.status(400).json({ message: 'Invalid data' });
+        return res.status(400).json({ message: 'Invalid data', success : false});
     }
 
     const { email, password, name, firstname } = result.data;
@@ -31,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
     });
     if (userExists) {
-        return res.status(400).json({ message: 'This email is already associated with an account' });
+        return res.status(400).json({ message: 'This email is already associated with an account', success : false});
     }
 
     if (!process.env.JWT_SECRET) {
@@ -56,7 +56,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: 'Error hashing password or creating user' });
+        return res.status(500).json({ message: 'Error hashing password or creating user', success : false});
     }
 
     if (!process.env.SENDGRID_API_KEY) {
@@ -69,13 +69,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 to: email,
                 from: 'projex.verif@gmail.com',
                 subject: 'ProjeX - Verify your email',
-                text: `Click here to verify your email: http://localhost:3000/api/auth/verify-email?token=${token}`,
+                text: `Click here to verify your email: http://localhost:3000/auth/verify-email?token=${token}`,
             },
         )
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: 'Error sending email' });
+        return res.status(500).json({ message: 'Error sending email', success : false });
     }
 
-    res.status(200).json({ message: 'Registration successful' });
+    res.status(200).json({ message: 'Registration successful', success : true });
 }
