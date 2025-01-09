@@ -3,6 +3,7 @@ import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
+import sendgrid from '@sendgrid/mail';
 const prisma = new PrismaClient();
 
 const schema = z.object({
@@ -58,6 +59,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(500).json({ message: 'Error hashing password or creating user' });
     }
 
+    if (!process.env.SENDGRID_API_KEY) {
+        throw new Error('SENDGRID_API_KEY is not defined');
+    }
+
+    try {
+        sendgrid.send(
+            {
+                to: email,
+                from: 'projex.verif@gmail.com',
+                subject: 'ProjeX - Verify your email',
+                text: `Click here to verify your email: http://localhost:3000/api/auth/verify-email?token=${token}`,
+            },
+        )
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: 'Error sending email' });
+    }
 
     res.status(200).json({ message: 'Registration successful' });
 }
