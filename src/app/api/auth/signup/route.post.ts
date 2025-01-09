@@ -64,17 +64,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-        sendgrid.send(
-            {
-                to: email,
-                from: 'projex.verif@gmail.com',
-                subject: 'ProjeX - Verify your email',
-                text: `Click here to verify your email: http://localhost:3000/auth/verify-email?token=${token}`,
-            },
-        )
+        await sendgrid.send({
+            to: email,
+            from: 'projex.verif@gmail.com',
+            subject: 'ProjeX - Verify your email',
+            text: `Click here to verify your email: http://localhost:3000/auth/verify-email?token=${token}`,
+        });
     } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: 'Error sending email', success : false });
+        console.error('Error sending email:', error);
+        return res.status(500).json({ message: 'Error sending email', success: false });
     }
 
     res.status(200).json({ message: 'Registration successful', success : true });
