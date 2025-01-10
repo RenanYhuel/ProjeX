@@ -1,25 +1,25 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
+import { NextResponse, NextRequest } from 'next/server';
+
 const prisma = new PrismaClient();
 
 const schema = z.object({
     token: z.string(),
 });
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function POST(req: NextRequest) {
     if (req.method !== 'POST') {
-        return res.status(405).json({ message: 'HTTP method not allowed', success: false });
+        return NextResponse.json({ message: 'HTTP method not allowed', success: false }, { status: 405 });
     }
 
-    const body = req.body;
+    const body = await req.json();
     const result = schema.safeParse(body);
 
     if (!result.success) {
-        return res.status(400).json({ message: 'Invalid data', success : false});
+        return NextResponse.json({ message: 'Invalid data', success: false }, { status: 400 });
     }
-
 
     if (!process.env.JWT_SECRET) {
         throw new Error('JWT_SECRET is not defined');
@@ -35,7 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
 
         if (!user) {
-            return res.status(400).json({ message: 'Invalid token', success: false });
+            return NextResponse.json({ message: 'Invalid token', success: false }, { status: 400 });
         }
 
         await prisma.user.update({
@@ -47,9 +47,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             },
         });
 
-        res.status(200).json({ message: 'Email verified successfully', success: true });
+        return NextResponse.json({ message: 'Email verified successfully', success: true }, { status: 200 });
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: 'Error verifying email', success: false });
+        return NextResponse.json({ message: 'Invalid or expired token', success: false }, { status: 500 });
     }
 }

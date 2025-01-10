@@ -1,21 +1,21 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
 import jwt from 'jsonwebtoken';
+import { NextResponse, NextRequest } from 'next/server';
 
 const schema = z.object({
     token: z.string(),
 });
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function POST(req: NextRequest) {
     if (req.method !== 'POST') {
-        return res.status(405).json({ message: 'HTTP method not allowed', success: false });
+        return NextResponse.json({ message: 'HTTP method not allowed', success: false }, { status: 405 });
     }
 
-    const body = req.body;
+    const body = await req.json();
     const result = schema.safeParse(body);
 
     if (!result.success) {
-        return res.status(400).json({ message: 'Invalid data', success: false });
+        return NextResponse.json({ message: 'Invalid data', success: false }, { status: 400 });
     }
 
     const { token } = result.data;
@@ -29,9 +29,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (!decoded) {
             throw new Error('Invalid token');
         }
-        res.status(200).json({ message: 'Token is valid', success: true });
+        return NextResponse.json({ message: 'Token is valid', success: true }, { status: 200 });
     } catch (error) {
         console.log(error);
-        res.status(401).json({ message: 'Invalid or expired token', success: false });
+        return NextResponse.json({ message: 'Invalid or expired token', success: false }, { status: 401 });
     }
 }

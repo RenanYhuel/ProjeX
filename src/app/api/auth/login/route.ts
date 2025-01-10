@@ -1,8 +1,8 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
+import { NextResponse, NextRequest } from 'next/server';
 const prisma = new PrismaClient();
 
 const schema = z.object({
@@ -10,15 +10,21 @@ const schema = z.object({
     password: z.string().min(8),
 });
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function POST(req: NextRequest) {
     if (req.method !== 'POST') {
-        return res.status(405).json({ message: 'HTTP method not allowed', success: false });
+        return NextResponse.json(
+            { message: 'HTTP method not allowed', success: false },
+            { status: 405 }
+        );
     }
-    const body = req.body;
+    const body = await req.json();
     const result = schema.safeParse(body);
 
     if (!result.success) {
-        return res.status(400).json({ message: 'Invalid data', success: false });
+        return NextResponse.json(
+            { message: 'Invalid data', success: false },
+            { status: 400 }
+        );
     }
 
     const { email, password } = result.data;
@@ -29,12 +35,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     if (!user) {
-        return res.status(400).json({ message: 'Invalid email or password', success: false });
+        return NextResponse.json(
+            { message: 'Invalid email or password', success: false },
+            { status: 400 }
+        );
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
-        return res.status(400).json({ message: 'Invalid email or password', success: false });
+        return NextResponse.json(
+            { message: 'Invalid email or password', success: false },
+            { status: 400 }
+        );
     }
 
     if (!process.env.JWT_SECRET) {
@@ -45,5 +57,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         expiresIn: '1d',
     });
 
-    res.status(200).json({ message: 'Login successful', token, success: true });
+    return NextResponse.json(
+        { message: 'Login successful', token, success: true },
+        { status: 200 }
+    );
 }

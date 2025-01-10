@@ -1,9 +1,9 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
 import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 import sendgrid from '@sendgrid/mail';
+import { NextResponse, NextRequest } from 'next/server';
 const prisma = new PrismaClient();
 
 const schema = z.object({
@@ -13,15 +13,15 @@ const schema = z.object({
     firstname: z.string(),
 });
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function POST(req: NextRequest) {
     if (req.method !== 'POST') {
-        return res.status(405).json({ message: 'HTTP method not allowed', success : false});
+        return NextResponse.json({ message: 'HTTP method not allowed', success: false }, { status: 405 });
     }
-    const body = req.body;
+    const body = await req.json();
+    console.log(req.body)
     const result = schema.safeParse(body);
-
     if (!result.success) {
-        return res.status(400).json({ message: 'Invalid data', success : false});
+        return NextResponse.json({ message: 'Invalid data', success: false }, { status: 400 });
     }
 
     const { email, password, name, firstname } = result.data;
@@ -31,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
     });
     if (userExists) {
-        return res.status(400).json({ message: 'This email is already associated with an account', success : false});
+        return NextResponse.json({ message: 'This email is already associated with an account', success: false }, { status: 400 });
     }
 
     if (!process.env.JWT_SECRET) {
@@ -56,14 +56,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: 'Error hashing password or creating user', success : false});
+        return NextResponse.json({ message: 'Error hashing password or creating user', success: false }, { status: 500 });
     }
 
-    if (!process.env.SENDGRID_API_KEY) {
-        throw new Error('SENDGRID_API_KEY is not defined');
+    if (!process.env.SENDGRID_TOKEN) {
+        throw new Error('SENDGRID_TOKEN is not defined');
     }
 
     try {
+        sendgrid.setApiKey(process.env.SENDGRID_TOKEN);
         await sendgrid.send({
             to: email,
             from: 'projex.verif@gmail.com',
@@ -72,8 +73,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
     } catch (error) {
         console.error('Error sending email:', error);
-        return res.status(500).json({ message: 'Error sending email', success: false });
+        return NextResponse.json({ message: 'Error sending email', success: false }, { status: 500 });
     }
-
-    res.status(200).json({ message: 'Registration successful', success : true });
+    return NextResponse.json({ message: 'Registration successful', mail_token: token, success: true }, { status: 200 });
 }
