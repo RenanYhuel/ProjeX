@@ -1,6 +1,9 @@
 "use client";
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import checkSession from '@/utils/checkSession';
+import { SessionData } from '@/types/sessionData';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -9,6 +12,18 @@ export default function LoginPage() {
     const [needToVerify, setNeedToVerify] = useState(false);
     const [mailToken, setMailToken] = useState('');
     const router = useRouter();
+
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            checkSession(token).then((data: SessionData) => {
+                if (data.success) {
+                    router.push('/');
+                }
+            });
+        }
+    }, [router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

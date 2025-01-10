@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import checkSession from '@/utils/checkSession';
+import { SessionData } from '@/types/sessionData';
 
 type ApiResponse = {
   message?: string;
@@ -24,6 +26,17 @@ export default function Signup() {
   const [resendAttempts, setResendAttempts] = useState(0);
   const [timer, setTimer] = useState(0);
   const [signupData, setSignupData] = useState<ApiResponse | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+        checkSession(token).then((data: SessionData) => {
+            if (data.success) {
+                router.push('/');
+            }
+        });
+    }
+  }, [router]);
 
   const validatePassword = (password: string) => {
     const errorMessages = [];
