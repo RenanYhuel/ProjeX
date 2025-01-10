@@ -41,6 +41,13 @@ export async function POST(req: NextRequest) {
         );
     }
 
+    if(!user.isEmailVerified) {
+        return NextResponse.json(
+            { message: 'Email not verified', success: false, need_to_verify: true, mail_token: user.emailVerificationToken },
+            { status: 400 }
+        );
+    }
+
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
         return NextResponse.json(
