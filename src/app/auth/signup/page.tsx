@@ -23,7 +23,7 @@ export default function Signup() {
   const router = useRouter();
   const [resendAttempts, setResendAttempts] = useState(0);
   const [timer, setTimer] = useState(0);
-  const [data, setData] = useState<ApiResponse | null>(null);
+  const [signupData, setSignupData] = useState<ApiResponse | null>(null);
 
   const validatePassword = (password: string) => {
     const errorMessages = [];
@@ -64,7 +64,7 @@ export default function Signup() {
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
-            setData(data)
+            setSignupData(data)
             console.log('Signup successful', data);
             setStep(2);
             console.log(`Verification email sent to ${form.email}`);
@@ -90,16 +90,17 @@ export default function Signup() {
       return;
     }
 
-    fetch('/resend-mail', {
+    fetch('/api/auth/resend-email', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ mail_token: data?.mail_token }),
+      body: JSON.stringify({ mail_token: signupData?.mail_token }),
     })
       .then((response) => response.json())
-      .then((data) => {
+      .then((data: ApiResponse) => {
         if (data.success) {
+          setSignupData((prevData) => prevData ? { ...prevData, mail_token: data.mail_token } : null);
           setResendAttempts(resendAttempts + 1);
           setTimer(120); // 2 minutes timer
           const countdown = setInterval(() => {
@@ -164,7 +165,7 @@ export default function Signup() {
         <p>A verification email has been sent to {form.email}</p>
         <p>If you don&apos;t see the email, please check your spam folder.</p>
         <button onClick={() => router.push('/login')}>Login</button>
-        <button onClick={handleResendEmail}>Resend Verification Email</button>
+        <button onClick={() => handleResendEmail()}>Resend Verification Email</button>
       </div>
       )}
     </div>
