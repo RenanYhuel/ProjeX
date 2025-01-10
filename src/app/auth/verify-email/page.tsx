@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 type ApiResponse = {
@@ -10,7 +10,7 @@ type ApiResponse = {
   already?: boolean;
 };
 
-export default function VerifyEmail() {
+function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [verificationStatus, setVerificationStatus] = useState<string | null>(null);
@@ -53,5 +53,13 @@ export default function VerifyEmail() {
       )}
       <button onClick={() => router.push('/auth/login')}>Login</button>
     </div>
+  );
+}
+
+export default function VerifyEmail() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <VerifyEmailContent />
+    </Suspense>
   );
 }
