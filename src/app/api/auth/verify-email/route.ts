@@ -38,6 +38,10 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ message: 'Invalid token', success: false }, { status: 400 });
         }
 
+        if (user.isEmailVerified) {
+            return NextResponse.json({ message: 'Email already verified', success: false, already: true }, { status: 400 });
+        }
+
         await prisma.user.update({
             where: {
                 email: decoded.email,
