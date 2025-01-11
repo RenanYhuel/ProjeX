@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import checkSession from '@/utils/checkSession';
+import { SessionData } from '@/types/sessionData';
 
 type ApiResponse = {
   success: boolean;
@@ -14,6 +16,17 @@ function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [verificationStatus, setVerificationStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      checkSession(token).then((data: SessionData) => {
+        if (data.success) {
+          router.push('/');
+        }
+      });
+    }
+  }, [router]);
 
   useEffect(() => {
     const token = searchParams.get('token');

@@ -1,7 +1,6 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 import checkSession from '@/utils/checkSession';
 import { SessionData } from '@/types/sessionData';
 
@@ -9,10 +8,11 @@ export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [emailError, setEmailError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
     const [needToVerify, setNeedToVerify] = useState(false);
     const [mailToken, setMailToken] = useState('');
     const router = useRouter();
-
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -29,6 +29,23 @@ export default function LoginPage() {
         e.preventDefault();
         setError('');
         setNeedToVerify(false);
+        let valid = true;
+
+        if (!email) {
+            setEmailError('Email is required');
+            valid = false;
+        } else {
+            setEmailError('');
+        }
+
+        if (!password) {
+            setPasswordError('Password is required');
+            valid = false;
+        } else {
+            setPasswordError('');
+        }
+
+        if (!valid) return;
 
         const response = await fetch('/api/auth/login', {
             method: 'POST',
@@ -70,41 +87,66 @@ export default function LoginPage() {
     };
 
     return (
-        <div>
-            <h1>Login</h1>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label htmlFor="email">Email:</label>
-                    <input
-                        type="email"
-                        id="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4 sm:p-6 lg:p-8">
+            <div className="w-full max-w-md">
+                <div className="bg-white p-8 rounded-lg shadow-md">
+                    <h1 className="text-2xl font-bold mb-6">Login</h1>
+                    <form onSubmit={handleSubmit}>
+                        <div className="mb-4">
+                            <label className="block text-gray-700">Email:</label>
+                            <input
+                                type="email"
+                                className="w-full mt-2 p-2 border rounded"
+                                value={email}
+                                onChange={(e) => {
+                                    setEmail(e.target.value);
+                                    if (e.target.value) setEmailError('');
+                                }}
+                            />
+                            {emailError && <p className="mt-2 text-red-500">{emailError}</p>}
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-gray-700">Password:</label>
+                            <input
+                                type="password"
+                                className="w-full mt-2 p-2 border rounded"
+                                value={password}
+                                onChange={(e) => {
+                                    setPassword(e.target.value);
+                                    if (e.target.value) setPasswordError('');
+                                }}
+                            />
+                            {passwordError && <p className="mt-2 text-red-500">{passwordError}</p>}
+                        </div>
+                        {error && <p className="mt-2 text-red-500">{error}</p>}
+                        <div className="flex justify-between items-center mt-5">
+                            <p>
+                                Don&apos;t have an account?{' '}<br/>
+                                <a href="/auth/signup" className="text-blue-500 underline">
+                                    Create one
+                                </a>
+                            </p>
+                            <button
+                                type="submit"
+                                className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+                            >
+                                Login
+                            </button>
+                        </div>
+                    </form>
+                    {needToVerify && (
+                        <div className="mt-4">
+                            <p className="text-red-500">You need to verify your email.</p>
+                            <button
+                                className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 mt-2"
+                                onClick={handleResendEmail}
+                            >
+                                Resend Verification Email
+                            </button>
+                        </div>
+                    )}
                 </div>
-                <div>
-                    <label htmlFor="password">Password:</label>
-                    <input
-                        type="password"
-                        id="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                </div>
-                {error && <p style={{ color: 'red' }}>{error}</p>}
-                <button type="submit">Login</button>
-            </form>
-            {needToVerify && (
-                <div>
-                    <p>You need to verify your email.</p>
-                    <button onClick={handleResendEmail}>Resend Verification Email</button>
-                </div>
-            )}
-            <p>
-                Don&apos;t have an account? <a href="/auth/signup">Create one</a>
-            </p>
+            </div>
         </div>
     );
 }

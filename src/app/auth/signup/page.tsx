@@ -20,7 +20,8 @@ export default function Signup() {
     password: '',
     confirmPassword: '',
   });
-  const [errors, setErrors] = useState<string[]>([]);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
   const [step, setStep] = useState(1);
   const router = useRouter();
   const [resendAttempts, setResendAttempts] = useState(0);
@@ -30,11 +31,11 @@ export default function Signup() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-        checkSession(token).then((data: SessionData) => {
-            if (data.success) {
-                router.push('/');
-            }
-        });
+      checkSession(token).then((data: SessionData) => {
+        if (data.success) {
+          router.push('/');
+        }
+      });
     }
   }, [router]);
 
@@ -48,20 +49,56 @@ export default function Signup() {
     return errorMessages;
   };
 
+  useEffect(() => {
+    setPasswordErrors(validatePassword(form.password));
+  }, [form.password]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+
+    // Clear the error for the field being updated
+    setErrors((prevErrors) => {
+      const newErrors = { ...prevErrors };
+      delete newErrors[name];
+      delete newErrors.form;
+      return newErrors;
+    });
+
+    // Check if passwords match
+    if (name === 'password' || name === 'confirmPassword') {
+      const newPassword = name === 'password' ? value : form.password;
+      const newConfirmPassword = name === 'confirmPassword' ? value : form.confirmPassword;
+
+      if (newPassword !== newConfirmPassword && newConfirmPassword) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          confirmPassword: 'Passwords do not match',
+        }));
+      } else {
+        setErrors((prevErrors) => {
+          const newErrors = { ...prevErrors };
+          delete newErrors.confirmPassword;
+          return newErrors;
+        });
+      }
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const passwordErrors = validatePassword(form.password);
-    if (form.password !== form.confirmPassword) {
-      passwordErrors.push('Passwords do not match');
-    }
-    if (passwordErrors.length > 0) {
-      setErrors(passwordErrors);
-    } else {
-      setErrors([]);
+    const newErrors: { [key: string]: string } = {};
+
+    if (!form.firstname) newErrors.firstname = 'First name is required';
+    if (!form.lastname) newErrors.lastname = 'Last name is required';
+    if (!form.email) newErrors.email = 'Email address is required';
+    if (!form.password) newErrors.password = 'Password is required';
+    if (!form.confirmPassword) newErrors.confirmPassword = 'Confirm password is required';
+    if (form.password !== form.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
       fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
@@ -77,7 +114,7 @@ export default function Signup() {
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
-            setSignupData(data)
+            setSignupData(data);
             console.log('Signup successful', data);
             setStep(2);
             console.log(`Verification email sent to ${form.email}`);
@@ -86,20 +123,19 @@ export default function Signup() {
           }
         })
         .catch((error) => {
-          setErrors([error.message]);
+          setErrors({ form: error.message });
         });
     }
   };
 
-
   const handleResendEmail = () => {
     if (resendAttempts >= 3) {
-      setErrors(['Maximum resend attempts reached.']);
+      setErrors({ form: 'Maximum resend attempts reached.' });
       return;
     }
 
     if (timer > 0) {
-      setErrors([`Please wait ${timer} seconds before resending the email.`]);
+      setErrors({ form: `Please wait ${timer} seconds before resending the email.` });
       return;
     }
 
@@ -113,7 +149,7 @@ export default function Signup() {
       .then((response) => response.json())
       .then((data: ApiResponse) => {
         if (data.success) {
-          setSignupData((prevData) => prevData ? { ...prevData, mail_token: data.mail_token } : null);
+          setSignupData((prevData) => (prevData ? { ...prevData, mail_token: data.mail_token } : null));
           setResendAttempts(resendAttempts + 1);
           setTimer(120); // 2 minutes timer
           const countdown = setInterval(() => {
@@ -130,57 +166,123 @@ export default function Signup() {
         }
       })
       .catch((error) => {
-        setErrors([error.message]);
+        setErrors({ form: error.message });
       });
   };
 
   return (
-    <div>
-      {step === 1 ? (
-      <>
-        <h1>Signup</h1>
-        <form onSubmit={handleSubmit}>
-        <div>
-          <label>First Name</label>
-          <input type="text" name="firstname" value={form.firstname} onChange={handleChange} required />
-        </div>
-        <div>
-          <label>Last Name</label>
-          <input type="text" name="lastname" value={form.lastname} onChange={handleChange} required />
-        </div>
-        <div>
-          <label>Email</label>
-          <input type="email" name="email" value={form.email} onChange={handleChange} required />
-        </div>
-        <div>
-          <label>Password</label>
-          <input type="password" name="password" value={form.password} onChange={handleChange} required />
-        </div>
-        <div>
-          <label>Confirm Password</label>
-          <input type="password" name="confirmPassword" value={form.confirmPassword} onChange={handleChange} required />
-        </div>
-        {errors.length > 0 && (
-          <ul>
-          {errors.map((error, index) => (
-            <li key={index}>Your password is missing {error}</li>
-          ))}
-          </ul>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4 sm:p-6 lg:p-8">
+      <div className="w-full max-w-md">
+        {step === 1 ? (
+          <div className="bg-white p-8 rounded-lg shadow-md">
+            <h1 className="text-2xl font-bold mb-6">Create a new account</h1>
+            <form onSubmit={handleSubmit}>
+              <div className="mb-4">
+                <label className="block text-gray-700">First name</label>
+                <input
+                  name="firstname"
+                  placeholder="John"
+                  className="w-full mt-2 p-2 border rounded"
+                  value={form.firstname}
+                  onChange={handleChange}
+                />
+                {errors.firstname && <p className="mt-2 text-red-500">{errors.firstname}</p>}
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700">Last name</label>
+                <input
+                  name="lastname"
+                  placeholder="Doe"
+                  className="w-full mt-2 p-2 border rounded"
+                  value={form.lastname}
+                  onChange={handleChange}
+                />
+                {errors.lastname && <p className="mt-2 text-red-500">{errors.lastname}</p>}
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700">Email address</label>
+                <input
+                  name="email"
+                  placeholder="johndoe@gmail.com"
+                  className="w-full mt-2 p-2 border rounded"
+                  value={form.email}
+                  onChange={handleChange}
+                />
+                {errors.email && <p className="mt-2 text-red-500">{errors.email}</p>}
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700">Password</label>
+                <input
+                  name="password"
+                  type="password"
+                  placeholder="********"
+                  className="w-full mt-2 p-2 border rounded"
+                  value={form.password}
+                  onChange={handleChange}
+                />
+                {errors.password && <p className="mt-2 text-red-500">{errors.password}</p>}
+                {form.password && passwordErrors.length > 0 && (
+                  <div className="mt-2 text-red-500">
+                    <p>You need to have:</p>
+                    <ul className="list-disc list-inside">
+                      {passwordErrors.map((error, index) => (
+                        <li key={index}>{error}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700">Confirm password</label>
+                <input
+                  name="confirmPassword"
+                  type="password"
+                  placeholder="********"
+                  className="w-full mt-2 p-2 border rounded"
+                  value={form.confirmPassword}
+                  onChange={handleChange}
+                />
+                {errors.confirmPassword && <p className="mt-2 text-red-500">{errors.confirmPassword}</p>}
+              </div>
+              {errors.form && (
+                <div className="mb-4 text-red-500">
+                  <p>{errors.form}</p>
+                </div>
+              )}
+              <div className="flex justify-between items-center mt-5">
+                <p>
+                  Already have an account? <br /> <div className="text-blue-500 underline cursor-pointer" onClick={() => router.push('/auth/login')}>Login</div>
+                </p>
+                <button
+                  type="submit"
+                  className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+                >
+                  Sign up
+                </button>
+              </div>
+            </form>
+          </div>
+        ) : (
+          <div className="bg-white p-8 rounded-lg shadow-md text-center">
+            <p>A verification email has been sent to {form.email}</p>
+            <p>If you don&apos;t see the email, please check your spam folder.</p>
+            <div className="mt-4">
+              <button
+                className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 mr-2"
+                onClick={() => router.push('/auth/login')}
+              >
+                Login
+              </button>
+              <button
+                className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
+                onClick={() => handleResendEmail()}
+              >
+                Resend Verification Email
+              </button>
+            </div>
+          </div>
         )}
-        <button type="submit">Signup</button>
-        </form>
-        <p>
-        Already have an account? <a href="/login">Login</a>
-        </p>
-      </>
-      ) : (
-      <div>
-        <p>A verification email has been sent to {form.email}</p>
-        <p>If you don&apos;t see the email, please check your spam folder.</p>
-        <button onClick={() => router.push('/login')}>Login</button>
-        <button onClick={() => handleResendEmail()}>Resend Verification Email</button>
       </div>
-      )}
     </div>
   );
 }
