@@ -45,6 +45,7 @@ ProjeX is a project management application built with **Next.js**. It allows use
 
 - **Next.js** (Full-stack React framework)
 - **React** (UI Components)
+- **Tailwind CSS** (UI Styling)
 - **Prisma** (ORM for database management with PostgreSQL)
 - **PostgreSQL** (Database)
 - **Socket.io** (Real-time notifications)
