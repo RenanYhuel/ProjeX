@@ -25,3 +25,8 @@ model User {
   emailVerificationToken String?
 }
 
+model EmailRequest {
+  id        Int      @id @default(autoincrement())
+  email     String
+  createdAt DateTime @default(now())
+}

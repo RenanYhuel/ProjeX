@@ -26,7 +26,7 @@ export default function Signup() {
   const router = useRouter();
   const [resendAttempts, setResendAttempts] = useState(0);
   const [timer, setTimer] = useState(0);
-  const [signupData, setSignupData] = useState<ApiResponse | null>(null);
+  const [mailError, setMailError] = useState<string | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -114,10 +114,8 @@ export default function Signup() {
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
-            setSignupData(data);
             console.log('Signup successful', data);
-            setStep(2);
-            console.log(`Verification email sent to ${form.email}`);
+            sendVerificationEmail(form.email);
           } else {
             throw new Error(data.message || 'Something went wrong');
           }
@@ -126,6 +124,31 @@ export default function Signup() {
           setErrors({ form: error.message });
         });
     }
+  };
+
+  const sendVerificationEmail = (email: string | undefined) => {
+    fetch('/api/auth/send-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email: email }),
+    })
+      .then((response) => response.json())
+      .then((data: ApiResponse) => {
+        if (data.success) {
+          setStep(2);
+          setMailError(null);
+        } else {
+          setStep(2);
+          setMailError('Verification email could not be sent. Please try again.');
+        }
+      })
+      .catch((error) => {
+        console.log(error)
+        setStep(2);
+        setMailError('Verification email could not be sent. Please try again.');
+      });
   };
 
   const handleResendEmail = () => {
@@ -139,35 +162,18 @@ export default function Signup() {
       return;
     }
 
-    fetch('/api/auth/resend-email', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ mail_token: signupData?.mail_token }),
-    })
-      .then((response) => response.json())
-      .then((data: ApiResponse) => {
-        if (data.success) {
-          setSignupData((prevData) => (prevData ? { ...prevData, mail_token: data.mail_token } : null));
-          setResendAttempts(resendAttempts + 1);
-          setTimer(120); // 2 minutes timer
-          const countdown = setInterval(() => {
-            setTimer((prevTimer) => {
-              if (prevTimer <= 1) {
-                clearInterval(countdown);
-                return 0;
-              }
-              return prevTimer - 1;
-            });
-          }, 1000);
-        } else {
-          throw new Error(data.message || 'Something went wrong');
+    sendVerificationEmail(form.email);
+    setResendAttempts(resendAttempts + 1);
+    setTimer(120); // 2 minutes timer
+    const countdown = setInterval(() => {
+      setTimer((prevTimer) => {
+        if (prevTimer <= 1) {
+          clearInterval(countdown);
+          return 0;
         }
-      })
-      .catch((error) => {
-        setErrors({ form: error.message });
+        return prevTimer - 1;
       });
+    }, 1000);
   };
 
   return (
@@ -263,24 +269,63 @@ export default function Signup() {
             </form>
           </div>
         ) : (
-          <div className="bg-white p-8 rounded-lg shadow-md text-center">
-            <p>A verification email has been sent to {form.email}</p>
-            <p>If you don&apos;t see the email, please check your spam folder.</p>
-            <div className="mt-4">
-              <button
-                className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 mr-2"
-                onClick={() => router.push('/auth/login')}
+            <div className="bg-white p-8 rounded-lg shadow-md text-center flex flex-col items-center justify-center">
+            <p className="text-2xl font-bold mb-4">A verification email has been sent to {form.email}</p>
+            <p className="mb-4">If you don&apos;t see the email, please check your spam folder.</p>
+            {mailError ? (
+              <>
+              <p className="text-red-500 mb-4">{mailError}</p>
+              <div className="w-24 h-24 mb-4">
+                <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                className="text-red-500 w-full h-full"
+                >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+                </svg>
+              </div>
+              </>
+            ) : (
+              <div className="w-24 h-24 mb-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                className="text-green-500 w-full h-full"
               >
-                Login
+                <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+                />
+              </svg>
+              </div>
+            )}
+            <div className="mt-4 flex space-x-4">
+              <button
+              className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+              onClick={() => router.push('/auth/login')}
+              >
+              Login
               </button>
               <button
-                className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
-                onClick={() => handleResendEmail()}
+              className={`bg-gray-500 text-white py-2 px-4 rounded ${timer > 0 || resendAttempts >= 3 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-600'}`}
+              onClick={handleResendEmail}
+              disabled={timer > 0 || resendAttempts >= 3}
               >
-                Resend Verification Email
+              {timer > 0 ? `Resend in ${timer}s` : 'Resend Verification Email'}
               </button>
             </div>
-          </div>
+            </div>
         )}
       </div>
     </div>
