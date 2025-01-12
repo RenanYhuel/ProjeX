@@ -141,13 +141,13 @@ export default function Signup() {
           setMailError(null);
         } else {
           setStep(2);
-          setMailError('Verification email could not be sent. Please try again.');
+          setMailError('Verification email could not be sent. Please try again later.');
         }
       })
       .catch((error) => {
         console.log(error)
         setStep(2);
-        setMailError('Verification email could not be sent. Please try again.');
+        setMailError('Verification email could not be sent. Please try again later.');
       });
   };
 
