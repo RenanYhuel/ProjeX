@@ -23,6 +23,6 @@ export default function Home() {
   }, [router]);
 
   return (
-    <>Dashboard Page</>
+    <></>
   );
 }
