@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import React from "react";
-import './global.css'
+import './global.css';
+import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
   title: "ProjeX",
@@ -14,7 +15,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+      </head>
       <body>
+        <Navbar />
         {children}
       </body>
     </html>
