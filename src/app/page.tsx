@@ -23,7 +23,8 @@ export default function Home() {
   }, [router]);
 
   return (
-    <>
-    </>
+    <div className='bg-red-700'>
+    t
+    </div>
   );
 }
