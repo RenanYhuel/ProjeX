@@ -6,7 +6,7 @@ import Link from 'next/link';
 const Sidebar = () => {
 
   return (
-    <div className="min-h-full fixed top-0 left-0 bg-[#f6f6f9] w-[230px] h-[100px] z-[2000]">
+    <div className="min-h-full bg-[#f6f6f9] w-[230px] z-[2000] h-screen">
       <div className="flex h-16 w-full items-center justify-center p-[20px] text-[24px]">
         <span className="text-3xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Proje<span className="text-purple-600">X</span>

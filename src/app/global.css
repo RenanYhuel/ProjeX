@@ -62,6 +62,3 @@
     border-radius: 50%;
     box-shadow: -20px -20px 0 #f6f6f9;
 }
-.conatainer {
-    max-width: calc(100% - 230px);
-}
