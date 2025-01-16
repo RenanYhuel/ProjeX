@@ -24,6 +24,11 @@ export default function Navbar() {
         }
     };
 
+    const logout = () => {
+        localStorage.removeItem('token');
+        router.push('/auth/login');
+    }
+
     useEffect(() => {
         if (isDropdownOpen) {
             document.addEventListener('mousedown', handleClickOutside);
@@ -78,10 +83,10 @@ export default function Navbar() {
             {isDropdownOpen && (
                 <div ref={dropdownRef} className="absolute top-[55px] z-[6000] right-0 mt-2 w-[210px] bg-[#f6f6f9] border border-t-0 border-white rounded-bl-[15px] transition-opacity">
                     <ul>
-                        <li className="p-2 hover:bg-gray-100 cursor-pointer">Profil</li>
-                        <li className="p-2 hover:bg-gray-100 cursor-pointer">Organisations</li>
-                        <li className="p-2 hover:bg-gray-100 cursor-pointer">Paramètres</li>
-                        <li className="p-2 hover:bg-gray-100 cursor-pointer">Déconnexion</li>
+                        <li className="p-2 hover:bg-gray-100 cursor-pointer">Profile</li>
+                        <li className="p-2 hover:bg-gray-100 cursor-pointer">Organizations</li>
+                        <li className="p-2 hover:bg-gray-100 cursor-pointer">Settings</li>
+                        <li className="p-2 hover:bg-gray-100 cursor-pointer" onClick={logout}>Logout</li>
                     </ul>
                 </div>
             )}
