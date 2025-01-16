@@ -1,12 +1,40 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import ExempleProfil from '@/assets/exemple-profile.avif';
-import {  useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 export default function Navbar() {
     const [user, setUser] = useState<{ firstname: string, lastname: string } | null>(null);
     const router = useRouter();
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const toggleRef = useRef<HTMLDivElement>(null);
+
+    const toggleDropdown = () => {
+        setIsDropdownOpen(!isDropdownOpen);
+    };
+
+    const handleClickOutside = (event: MouseEvent) => {
+        if (
+            dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
+            toggleRef.current && !toggleRef.current.contains(event.target as Node)
+        ) {
+            setIsDropdownOpen(false);
+        }
+    };
+
+    useEffect(() => {
+        if (isDropdownOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        } else {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isDropdownOpen]);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -37,12 +65,26 @@ export default function Navbar() {
                 <div className="flex items-center space-x-2">
                     <span className="material-symbols-outlined">notifications</span>
                 </div>
-                {user && (
-                    <span className="font-medium">{`${user.firstname} ${user.lastname}`}</span>
-                )}
-                <Image src={ExempleProfil} alt="Profile" width={40} height={40} className="rounded-full" />
+                <div ref={toggleRef} onClick={toggleDropdown} className="group flex items-center space-x-2 p-2 rounded hover:bg-gray-200 cursor-pointer">
+                    {user && (
+                        <>
+                            <span className="material-symbols-outlined">keyboard_arrow_down</span>
+                            <span className="font-medium group-hover:opacity-75">{`${user.firstname} ${user.lastname}`}</span>
+                        </>
+                    )}
+                    <Image src={ExempleProfil} alt="Profile" width={40} height={40} className="rounded-full group-hover:opacity-75" />
+                </div>
             </div>
+            {isDropdownOpen && (
+                <div ref={dropdownRef} className="absolute top-[55px] z-[6000] right-0 mt-2 w-[210px] bg-[#f6f6f9] border border-t-0 border-white rounded-bl-[15px] transition-opacity">
+                    <ul>
+                        <li className="p-2 hover:bg-gray-100 cursor-pointer">Profil</li>
+                        <li className="p-2 hover:bg-gray-100 cursor-pointer">Organisations</li>
+                        <li className="p-2 hover:bg-gray-100 cursor-pointer">Paramètres</li>
+                        <li className="p-2 hover:bg-gray-100 cursor-pointer">Déconnexion</li>
+                    </ul>
+                </div>
+            )}
         </nav>
     );
 };
-
