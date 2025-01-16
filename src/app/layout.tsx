@@ -18,7 +18,7 @@ export default async function RootLayout({
       <head>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
       </head>
-      <body className="overflow-x-hidden">
+      <body className="overflow-x-hidden overflow-y-hidden">
         <Content>
           {children}
         </Content>

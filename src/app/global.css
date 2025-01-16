@@ -53,6 +53,7 @@
 
 .nav::before {
 
+    z-index: 5000;
     content: "";
     position: absolute;
     width: 40px;
@@ -61,4 +62,29 @@
     left: 0;
     border-radius: 50%;
     box-shadow: -20px -20px 0 #f6f6f9;
+}
+
+.main {
+
+    max-height: calc(100vh - 65px);
+}
+
+*::-webkit-scrollbar-track
+{
+	border-radius: 25px;
+	background-color: #F5F5F5;
+}
+
+*::-webkit-scrollbar
+{
+
+	width: 12px;
+	background-color: #F5F5F5;
+}
+
+*::-webkit-scrollbar-thumb
+{
+
+	border-radius: 25px;
+	background-color: #aaaaaa;
 }

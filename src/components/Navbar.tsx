@@ -29,12 +29,9 @@ export default function Navbar() {
 
     return (
         <nav className="bg-[#f6f6f9] flex justify-between items-center relative h-16 nav px-4 m-w-full w-full">
-            <div className="flex items-center space-x-4">
-                <input
-                    type="text"
-                    placeholder="Search..."
-                    className="px-2 py-1 border rounded"
-                />
+            <div className="flex items-center h-[36px] w-[400px]">
+                <input type="search" placeholder="Search..." className='grow flex px-[16px] h-full border-none bg-[#eee] rounded-l-[36px] outline-none w-full text-[#363949] items-center justify-center'/>
+                <button className="w-[80px] h-full flex justify-center items-center bg-[#aaaaaa] text-[#f6f6f9] text-[18px] border-none outline-none rounded-r-[36px] cursor-pointer" type="submit"><span className="material-symbols-outlined">search</span></button>
             </div>
             <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">

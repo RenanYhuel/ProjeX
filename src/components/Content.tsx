@@ -16,13 +16,17 @@ export default function Content({ children }: { children: React.ReactNode }) {
             {!showSidebar ? (
                 children
             ) : (
-<div className="min-h-screen flex flex-col bg-[#eee] overflow-x-hidden">
-    <div className="flex flex-grow w-full">
-        <Sidebar /> {/* La Sidebar prend déjà la hauteur de l'écran */}
+<div className="min-h-screen flex flex-col bg-[#eee] overflow-x-hidden overflow-y-hidden">
+    <div className="flex flex-grow w-full overflow-x-hidden overflow-y-hidden">
+        <Sidebar />
         <div className="flex flex-col w-full flex-grow overflow-hidden">
             <Navbar />
-            <main className="flex flex-col w-full flex-grow p-4 overflow-y-auto box-border bg-[#eee] z-[2001]">
-                {children}
+            <main className="flex flex-col w-full flex-grow p-4 box-border bg-[#eee] z-[4000] main">
+                <div className='bg-[#f6f6f9] w-full h-full rounded-[25px] overflow-hidden p-0'>
+                    <div className="p-6  overflow-y-auto w-full h-full">
+                        {children}
+                    </div>
+                </div>
             </main>
         </div>
     </div>

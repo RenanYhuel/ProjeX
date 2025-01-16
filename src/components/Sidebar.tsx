@@ -28,10 +28,10 @@ const Sidebar = () => {
           </li>
         </ul>
       </div>
-      <ul className="mb-4">
-        <li className="p-4">
-          <Link href="#" className="flex items-center">
-            <span className="material-symbols-outlined">logout</span>
+      <ul className="mt-[48px] w-full">
+        <li className="h-[48px] bg-transparent ml-[6px] rounded-l-[48px] p-[4px] sidebar">
+          <Link href="#" className="w-full h-full bg-[#f6f6f9] flex items-center rounded-[48px] text-[16px] whitespace-nowrap text-red-600">
+            <span className="material-symbols-outlined ml-3">logout</span>
             <span className="ml-2">Logout</span>
           </Link>
         </li>
