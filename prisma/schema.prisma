@@ -23,6 +23,7 @@ model User {
   createdAt            DateTime @default(now())
   isEmailVerified      Boolean  @default(false)
   emailVerificationToken String?
+  organizations Organization[]
 }
 
 model EmailRequest {
@@ -34,6 +35,8 @@ model EmailRequest {
 model Organization {
   id        Int      @id @default(autoincrement())
   name      String
+  userId    Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
 }
